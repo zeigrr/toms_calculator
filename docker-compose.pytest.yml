@@ -1,0 +1,6 @@
+version: "3.3"
+
+services:
+  toms_calculator_tests:
+    build: .
+    command: pytest tests
