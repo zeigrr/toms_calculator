@@ -30,7 +30,7 @@ make run_tests
 ```python
 # after run project:
 
-[with OpenAPI](http://0.0.0.0:8008/docs)
+http://0.0.0.0:8008/docs  # with OpenAPI
 
-[or with html form](http://0.0.0.0:8008)
+http://0.0.0.0:8008  # with html form
 ```
