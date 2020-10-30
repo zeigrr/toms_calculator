@@ -3,23 +3,17 @@
 
 ## Run project
 
-Description must be hear.
-
 ```bash
 make run
 ```
 
 ## Stop project
 
-Description must be hear.
-
 ```bash
 make stop
 ```
 
 ## Run tests
-
-Description must be hear.
 
 ```bash
 make run_tests
