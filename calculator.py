@@ -19,7 +19,7 @@ class Calculator:
         return round(d_cost, 3), round(t_cost, 3)
 
     @staticmethod
-    async def _get_discount_percentage(price) -> int:
+    async def _get_discount_percentage(price: float) -> int:
         if price >= 50000:
             discount = 15
         elif price >= 10000:
@@ -39,5 +39,5 @@ class Calculator:
         return states_taxes[self.state]
 
     @staticmethod
-    async def _calculate_percentage(price, percentage) -> float:
+    async def _calculate_percentage(price: float, percentage: float) -> float:
         return price / 100 * percentage if percentage else 0
