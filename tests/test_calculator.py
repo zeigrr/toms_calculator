@@ -58,20 +58,12 @@ data = [
 
 
 @pytest.mark.asyncio
-async def test_calculate_with_discount():
+async def test_calculate():
     for obj in data:
-        result_cost = await Calculator(
+        cost_with_discount, cost_with_tax = await Calculator(
             count=obj['count'],
-            price=obj['price']
-        ).calculate_with_discount()
-        assert result_cost == obj['discount_result_cost']
-
-
-@pytest.mark.asyncio
-async def test_calculate_with_tax():
-    for obj in data:
-        result_cost = await Calculator(
-            price=obj['discount_result_cost'],
+            price=obj['price'],
             state=obj['state']
-        ).calculate_with_tax()
-        assert result_cost == obj['tax_cost']
+        ).calculate()
+        assert cost_with_discount == obj['discount_result_cost']
+        assert cost_with_tax == obj['tax_cost']

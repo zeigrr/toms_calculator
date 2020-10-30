@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from calculator import Calculator
-from models import Index, PriceWithDiscount, PriceWithTax, ResultCost
+from models import Base, CalculateCost, ResultCost
 
 
 app = FastAPI()
@@ -16,26 +16,15 @@ templates = Jinja2Templates(directory="templates")
     response_class=HTMLResponse,
 )
 async def index(request: Request) -> templates.TemplateResponse:
-    return templates.TemplateResponse('index.html', {'request': request, 'schema': Index.schema()})
+    return templates.TemplateResponse('index.html', {'request': request, 'schema': Base.schema()})
 
 
 @app.post(
-    '/with_discount',
-    description='Calculates the cost of an order with discount',
-    response_description='Calculated cost with discount',
+    '/',
+    description='Calculates the cost of an order',
+    response_description='Calculated result cost',
     response_model=ResultCost,
 )
-async def calculate_with_discount(request: PriceWithDiscount) -> ResultCost:
-    result_cost = await Calculator(**request.dict()).calculate_with_discount()
-    return ResultCost(result_cost=result_cost)
-
-
-@app.post(
-    '/with_tax',
-    description='Calculates the cost of an order with tax',
-    response_description='Calculated cost with tax',
-    response_model=ResultCost,
-)
-async def calculate_with_tax(request: PriceWithTax) -> ResultCost:
-    result_cost = await Calculator(**request.dict()).calculate_with_tax()
-    return ResultCost(result_cost=result_cost)
+async def calculate(request: CalculateCost) -> ResultCost:
+    cost_with_discount, cost_with_tax = await Calculator(**request.dict()).calculate()
+    return ResultCost(cost_with_discount=cost_with_discount, cost_with_tax=cost_with_tax)

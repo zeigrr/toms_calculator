@@ -10,8 +10,8 @@ def test_get_index():
     assert response.status_code == 200
 
 
-def test_post_calculate_with_discount_without_count():
-    response = client.post('/with_discount', json={'price': 125})
+def test_post_calculate_without_count():
+    response = client.post('/', json={'price': 125, 'state': 'UT'})
     assert response.status_code == 422
     assert isinstance(response.json(), dict)
 
@@ -29,8 +29,8 @@ def test_post_calculate_with_discount_without_count():
     assert msg == 'field required'
 
 
-def test_post_calculate_with_discount_without_price():
-    response = client.post('/with_discount', json={'count': 89})
+def test_post_calculate_without_price():
+    response = client.post('/', json={'count': 5, 'state': 'UT'})
     assert response.status_code == 422
     assert isinstance(response.json(), dict)
 
@@ -48,36 +48,8 @@ def test_post_calculate_with_discount_without_price():
     assert msg == 'field required'
 
 
-def test_post_calculate_with_discount():
-    response = client.post('/with_discount', json={'count': 8, 'price': 125})
-    assert response.status_code == 200
-    assert isinstance(response.json(), dict)
-
-    result_cost = response.json().get('result_cost')
-    assert result_cost
-
-
-def test_post_calculate_with_tax_without_price():
-    response = client.post('/with_tax', json={'state': 'UT'})
-    assert response.status_code == 422
-    assert isinstance(response.json(), dict)
-
-    detail = response.json().get('detail', [])
-    assert detail
-    assert isinstance(detail[0], dict)
-
-    loc = detail[0].get('loc')
-    assert loc
-    assert isinstance(loc, list)
-    assert loc[1] == 'price'
-
-    msg = detail[0].get('msg')
-    assert msg
-    assert msg == 'field required'
-
-
-def test_post_calculate_with_tax_without_state():
-    response = client.post('/with_tax', json={'price': 1204})
+def test_post_calculate_without_state():
+    response = client.post('/', json={'count': 5, 'price': 125})
     assert response.status_code == 422
     assert isinstance(response.json(), dict)
 
@@ -95,8 +67,8 @@ def test_post_calculate_with_tax_without_state():
     assert msg == 'field required'
 
 
-def test_post_calculate_with_tax_with_wrong_state():
-    response = client.post('/with_tax', json={'price': 125, 'state': 'wrong_state'})
+def test_post_calculate_with_wrong_state():
+    response = client.post('/', json={'count': 5, 'price': 125, 'state': 'wrong_state'})
     assert response.status_code == 422
     assert isinstance(response.json(), dict)
 
@@ -114,13 +86,51 @@ def test_post_calculate_with_tax_with_wrong_state():
     assert 'unexpected value' in msg
 
 
-def test_post_calculate_with_tax():
-    states = ['UT', 'NV', 'TX', 'AL', 'CA']
+def test_post_calculate_with_count_less_than_zero():
+    response = client.post('/', json={'count': -1, 'price': 125, 'state': 'UT'})
+    assert response.status_code == 422
+    assert isinstance(response.json(), dict)
 
-    for state in states:
-        response = client.post('/with_tax', json={'price': 125, 'state': state})
-        assert response.status_code == 200
-        assert isinstance(response.json(), dict)
+    detail = response.json().get('detail', [])
+    assert detail
+    assert isinstance(detail[0], dict)
 
-        result_cost = response.json().get('result_cost')
-        assert result_cost
+    loc = detail[0].get('loc')
+    assert loc
+    assert isinstance(loc, list)
+    assert loc[1] == 'count'
+
+    msg = detail[0].get('msg')
+    assert msg
+    assert msg == 'count must be greater than zero'
+
+
+def test_post_calculate_with_price_less_than_zero():
+    response = client.post('/', json={'count': 5, 'price': -1, 'state': 'UT'})
+    assert response.status_code == 422
+    assert isinstance(response.json(), dict)
+
+    detail = response.json().get('detail', [])
+    assert detail
+    assert isinstance(detail[0], dict)
+
+    loc = detail[0].get('loc')
+    assert loc
+    assert isinstance(loc, list)
+    assert loc[1] == 'price'
+
+    msg = detail[0].get('msg')
+    assert msg
+    assert msg == 'price must be greater than zero'
+
+
+def test_post_calculate():
+    response = client.post('/', json={'count': 5, 'price': 125, 'state': 'UT'})
+    assert response.status_code == 200
+    assert isinstance(response.json(), dict)
+
+    cost_with_discount = response.json().get('cost_with_discount')
+    assert cost_with_discount
+
+    cost_with_tax = response.json().get('cost_with_tax')
+    assert cost_with_tax

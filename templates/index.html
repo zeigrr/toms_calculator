@@ -17,10 +17,12 @@
                 <div class="form-group">
                     <label for="count">{{ schema.properties.count.title }}</label>
                     <input id="count" name="count" type="{{ schema.properties.count.type }}" class="form-control">
+                    <div id="countError"  class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="price">{{ schema.properties.price.title }}</label>
                     <input id="price" name="price" type="{{ schema.properties.price.type }}" class="form-control">
+                    <div id="priceError"  class="invalid-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label for="state">{{ schema.properties.state.title }}</label>
@@ -29,15 +31,16 @@
                         <option>{{ option.const }}</option>
                         {% endfor %}
                     </select>
+                    <div id="stateError" class="invalid-feedback"></div>
                 </div>
                 <a href="#" onclick="calculate(event)" class="btn btn-primary">Submit</a>
             </form>
             <br/>
             <h5>Result:</h5>
-            <label for="withDiscount"><strong>Price with discount:</strong></label>
+            <label for="withDiscount"><strong>Cost with discount:</strong></label>
             <output id="withDiscount"></output>
             <br/>
-            <label for="withTax"><strong>Price with tax:</strong></label>
+            <label for="withTax"><strong>Cost with tax:</strong></label>
             <output id="withTax"></output>
         </div>
     </div>
@@ -53,19 +56,32 @@
     $(document).ready(function () {
         calculate = function (e) {
             e.preventDefault();
+            $('#withDiscount').text('');
+            $('#withTax').text('');
+
             let form_data = {}
             $('form').find('input, select').each(function () {
                 form_data[this.name] = $(this).val();
             });
-            $.post('/with_discount', JSON.stringify({'count': form_data.count, 'price': form_data.price}))
+            $.post('/', JSON.stringify(form_data))
                 .done(function (response) {
-                    $('#withDiscount').text(response.result_cost)
-                    $.post('/with_tax', JSON.stringify({'state': form_data.state, 'price': response.result_cost}))
-                        .done(function (response) {
-                            $('#withTax').text(response.result_cost)
-                        })
+                    $('#withDiscount').text(response.cost_with_discount);
+                    $('#withTax').text(response.cost_with_tax);
+                })
+                .fail(function (response) {
+                    $.each(response.responseJSON.detail, function (index, detail) {
+                        let field = detail.loc[1];
+                        let msg = detail.msg;
+
+                        $(`#${field}`).addClass('is-invalid');
+                        $(`#${field}Error`).text(msg);
+                    })
                 })
         }
+        $('input').on('focus', function (){
+            $(this).removeClass('is-invalid')
+            $(this).siblings('.invalid-feedback').text('')
+        })
     })
 </script>
 </body>
